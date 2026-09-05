@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poste d'observation — Sensibilisation à l'ingénierie sociale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10141a;
+    --panel: #171d26;
+    --panel-2: #1d2530;
+    --line: #2a3441;
+    --ink: #e7edf5;
+    --ink-dim: #93a2b5;
+    --amber: #e8a33d;
+    --cyan: #6fd7d1;
+    --red: #e5626a;
+    --green: #7fd88f;
+    --violet: #b39ddb;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1100px 500px at 15% -10%, rgba(111,215,209,.07), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(232,163,61,.06), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--cyan);}
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px;}
+
+  /* ---- header ---- */
+  header.top{
+    border-bottom:1px solid var(--line);
+    padding:22px 0 0 0;
+    position:sticky; top:0; z-index:50;
+    background:rgba(16,20,26,.92);
+    backdrop-filter:blur(8px);
+  }
+  .brand-row{display:flex; align-items:center; justify-content:space-between; gap:16px; padding-bottom:14px; flex-wrap:wrap;}
+  .brand{display:flex; align-items:baseline; gap:12px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);}
+  .brand h1{font-size:17px; margin:0; font-weight:600; letter-spacing:.2px;}
+  .brand .sub{color:var(--ink-dim); font-size:13px; font-family:var(--mono);}
+
+  .status{display:flex; align-items:center; gap:14px;}
+  .xp-pill{
+    font-family:var(--mono); font-size:12.5px; background:var(--panel-2); border:1px solid var(--line);
+    padding:6px 12px; border-radius:20px; display:flex; align-items:center; gap:7px; color:var(--amber);
+    transition:transform .25s ease;
+  }
+  .xp-pill.pulse{transform:scale(1.12);}
+  .xp-pill .ico{font-size:13px;}
+  .badges-row{display:flex; gap:6px;}
+  .badge-chip{
+    font-family:var(--mono); font-size:11px; padding:5px 9px; border-radius:14px;
+    background:rgba(111,215,209,.1); border:1px solid rgba(111,215,209,.35); color:var(--cyan);
+    opacity:0; transform:scale(.6); transition:all .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .badge-chip.show{opacity:1; transform:scale(1);}
+
+  nav.tabs{display:flex; gap:2px; overflow-x:auto;}
+  nav.tabs button{
+    background:none; border:none; color:var(--ink-dim);
+    font-family:var(--sans); font-size:14.5px; font-weight:500;
+    padding:12px 16px 14px; cursor:pointer; white-space:nowrap;
+    border-bottom:2px solid transparent; position:relative;
+  }
+  nav.tabs button.active{color:var(--ink); border-bottom-color:var(--amber);}
+  nav.tabs button:hover{color:var(--ink);}
+  nav.tabs button .check{color:var(--green); margin-left:6px; font-size:12px;}
+
+  main{padding:40px 0 90px;}
+  section.track{display:none;}
+  section.track.active{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  .kicker{font-family:var(--mono); font-size:12.5px; color:var(--amber); margin:0 0 10px;}
+  h2.title{font-size:29px; margin:0 0 6px; font-weight:600; letter-spacing:-.2px;}
+  p.lede{color:var(--ink-dim); font-size:16px; max-width:64ch; margin:0 0 28px;}
+
+  h3.h{font-size:19px; margin:40px 0 12px; font-weight:600; display:flex; gap:10px; align-items:center;}
+  h3.h .n{
+    font-family:var(--mono); font-size:12px; color:var(--bg); background:var(--cyan);
+    width:22px;height:22px;border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:22px 24px; margin-bottom:16px;}
+  .card p{margin:0 0 10px; color:var(--ink); font-size:15px;}
+  .card p:last-child{margin-bottom:0;}
+  .card ul{margin:8px 0 0; padding-left:20px; color:var(--ink);}
+  .card li{margin-bottom:6px; font-size:15px;}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr;}}
+
+  .tag{display:inline-block; font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:4px; margin-right:6px;}
+  .tag.attack{background:rgba(229,98,106,.12); color:var(--red); border:1px solid rgba(229,98,106,.3);}
+  .tag.defense{background:rgba(127,216,143,.12); color:var(--green); border:1px solid rgba(127,216,143,.3);}
+  .tag.info{background:rgba(111,215,209,.12); color:var(--cyan); border:1px solid rgba(111,215,209,.3);}
+
+  /* ---- mission briefing / objectives ---- */
+  .briefing{
+    background:linear-gradient(135deg, rgba(111,215,209,.06), rgba(232,163,61,.04));
+    border:1px solid var(--line); border-radius:10px; padding:20px 24px; margin-bottom:16px;
+  }
+  .briefing .b-label{font-family:var(--mono); font-size:11.5px; color:var(--cyan); margin-bottom:8px;}
+  .briefing p{margin:0; font-size:15px;}
+
+  .objectives{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  .objectives li{
+    display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:13.5px;
+    color:var(--ink-dim); padding:9px 12px; border-radius:7px; background:var(--panel-2);
+    border:1px solid var(--line); transition:all .3s ease;
+  }
+  .objectives li .box{
+    width:16px; height:16px; border-radius:4px; border:1.5px solid var(--ink-dim); flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:11px; transition:all .25s ease;
+  }
+  .objectives li.done{color:var(--ink); background:rgba(127,216,143,.07); border-color:rgba(127,216,143,.3);}
+  .objectives li.done .box{background:var(--green); border-color:var(--green); color:#0b0e13;}
+
+  /* ---- command reference ---- */
+  .cmdref{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 22px 22px; margin-bottom:16px;}
+  .cmdref .b-label{font-family:var(--mono); font-size:11.5px; color:var(--amber); margin-bottom:12px;}
+  .cmd-row{
+    display:flex; align-items:center; gap:14px; padding:11px 0; border-top:1px solid var(--line);
+    flex-wrap:wrap;
+  }
+  .cmd-row:first-of-type{border-top:none;}
+  .cmd-syntax{font-family:var(--mono); font-size:13.5px; color:var(--cyan); background:#0b0e13; padding:5px 10px; border-radius:6px; border:1px solid var(--line); white-space:nowrap;}
+  .cmd-desc{color:var(--ink-dim); font-size:13.5px; flex:1; min-width:180px;}
+  .cmd-try{
+    font-family:var(--mono); font-size:12px; background:none; border:1px solid var(--cyan); color:var(--cyan);
+    padding:6px 11px; border-radius:6px; cursor:pointer; white-space:nowrap; transition:all .2s ease;
+  }
+  .cmd-try:hover{background:rgba(111,215,209,.12);}
+
+  /* ---- terminal ---- */
+  .terminal-shell{
+    background:#0b0e13; border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    box-shadow:0 20px 50px -20px rgba(0,0,0,.6);
+  }
+  .terminal-bar{
+    background:#141a22; padding:9px 14px; display:flex; align-items:center; gap:8px;
+    border-bottom:1px solid var(--line);
+  }
+  .terminal-bar .dots{display:flex; gap:6px;}
+  .terminal-bar .dots i{width:10px;height:10px;border-radius:50%; display:block;}
+  .terminal-bar .dots i:nth-child(1){background:#e5626a;}
+  .terminal-bar .dots i:nth-child(2){background:#e8c23d;}
+  .terminal-bar .dots i:nth-child(3){background:#7fd88f;}
+  .terminal-bar .label{font-family:var(--mono); font-size:12px; color:var(--ink-dim); margin-left:6px;}
+  .terminal-body{
+    font-family:var(--mono); font-size:13.5px; padding:16px 18px; min-height:230px; max-height:420px;
+    overflow-y:auto; color:#c8f0d8;
+  }
+  .terminal-body .line{margin-bottom:6px; white-space:pre-wrap; word-break:break-word;}
+  .terminal-body .prompt{color:var(--amber);}
+  .terminal-body .cmd{color:#eaf3ff;}
+  .terminal-body .out{color:#8fb5a3;}
+  .terminal-body .out.warn{color:var(--amber);}
+  .terminal-body .out.bad{color:var(--red);}
+  .terminal-body .out.good{color:var(--green);}
+  .terminal-body .out.xp{color:var(--violet); font-weight:600;}
+  .terminal-input-row{
+    display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid var(--line);
+    background:#0e1319;
+  }
+  .terminal-input-row .p{color:var(--amber); font-family:var(--mono); font-size:13.5px;}
+  .terminal-input-row input{
+    flex:1; background:none; border:none; outline:none; color:#eaf3ff;
+    font-family:var(--mono); font-size:13.5px;
+  }
+  .term-hint-btn{
+    font-family:var(--mono); font-size:11px; color:var(--ink-dim); background:none; border:1px solid var(--line);
+    padding:5px 9px; border-radius:6px; cursor:pointer; white-space:nowrap;
+  }
+  .term-hint-btn:hover{color:var(--ink); border-color:var(--ink-dim);}
+
+  /* ---- matching game (track 2) ---- */
+  .match-wrap{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px;}
+  @media(max-width:640px){.match-wrap{grid-template-columns:1fr;}}
+  .match-col .m-label{font-family:var(--mono); font-size:11.5px; color:var(--ink-dim); margin-bottom:8px;}
+  .match-item{
+    display:block; width:100%; text-align:left; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--ink); padding:13px 15px; border-radius:8px; cursor:pointer; margin-bottom:8px;
+    font-family:var(--sans); font-size:14px; transition:all .2s ease;
+  }
+  .match-item:hover{border-color:var(--cyan);}
+  .match-item.selected{border-color:var(--amber); background:rgba(232,163,61,.08);}
+  .match-item.matched{border-color:var(--green); background:rgba(127,216,143,.08); color:var(--green); cursor:default;}
+  .match-item.shake{animation:shake .35s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);}}
+  .match-feedback{font-family:var(--mono); font-size:13px; color:var(--ink-dim); min-height:20px; margin-bottom:14px;}
+
+  /* ---- quiz ---- */
+  .quiz-q{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px 22px; margin-bottom:14px;}
+  .quiz-q p.q{font-weight:600; margin:0 0 14px; font-size:15px;}
+  .opts{display:flex; flex-direction:column; gap:8px;}
+  .opt{
+    text-align:left; background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
+    padding:11px 14px; border-radius:8px; cursor:pointer; font-family:var(--sans); font-size:14.5px;
+  }
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{border-color:var(--green); background:rgba(127,216,143,.09); color:var(--green);}
+  .opt.wrong{border-color:var(--red); background:rgba(229,98,106,.09); color:var(--red);}
+  .opt[disabled]{cursor:default;}
+  .explain{margin-top:12px; font-size:13.5px; color:var(--ink-dim); display:none;}
+  .explain.show{display:block;}
+  .quiz-score{
+    margin-top:22px; padding:18px 22px; border-radius:10px; border:1px solid var(--line);
+    background:var(--panel); font-family:var(--mono); font-size:14px; display:none;
+  }
+  .quiz-score.show{display:block;}
+  .barwrap{background:var(--line); height:8px; border-radius:4px; overflow:hidden; margin-top:10px;}
+  .barfill{height:100%; background:var(--cyan); width:0%; transition:width .5s ease;}
+
+  footer{border-top:1px solid var(--line); padding:26px 0; color:var(--ink-dim); font-size:13px; font-family:var(--mono);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand-row">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Poste d'observation</h1>
+        <span class="sub">— sensibilisation à l'ingénierie sociale</span>
+      </div>
+      <div class="status">
+        <div class="badges-row" id="badges-row"></div>
+        <div class="xp-pill" id="xp-pill"><span class="ico">◆</span><span id="xp-count">0</span> XP</div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="active" data-track="defense">01 · Se défendre <span class="check" id="check-defense"></span></button>
+      <button data-track="concepts">02 · Comprendre l'attaquant <span class="check" id="check-concepts"></span></button>
+      <button data-track="redteam">03 · Cadrer une mission red team <span class="check" id="check-redteam"></span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ===================== TRACK 1 : DEFENSE ===================== -->
+<section class="track active" id="track-defense">
+  <p class="kicker">MODULE 01 · +30 XP disponibles</p>
+  <h2 class="title">Reconnaître et réagir face au phishing</h2>
+  <p class="lede">L'ingénierie sociale ne vise pas une faille logicielle mais un réflexe humain : la curiosité, l'urgence, la confiance. Ce module t'entraîne à repérer les signaux avant qu'ils ne deviennent un incident.</p>
+
+  <h3 class="h"><span class="n">1</span>Théorie</h3>
+  <div class="card">
+    <p><span class="tag defense">Principe</span> Une attaque de social engineering réussit rarement grâce à un exploit technique sophistiqué : elle réussit parce qu'un humain a cliqué, ouvert, ou répondu trop vite. Le rôle de la défense est donc de ralentir ce réflexe, pas seulement d'ajouter un filtre de plus.</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <p style="font-weight:600; margin-bottom:8px;">Signaux dans un e-mail</p>
+      <ul>
+        <li>Domaine d'expéditeur proche mais pas identique</li>
+        <li>Urgence artificielle ou appel à la curiosité</li>
+        <li>Lien dont le texte affiché ne correspond pas à la destination réelle</li>
+        <li>Pièce jointe inattendue, surtout un PDF ou un document Office</li>
+      </ul>
+    </div>
+    <div class="card">
+      <p style="font-weight:600; margin-bottom:8px;">Signaux sur un site</p>
+      <ul>
+        <li>URL qui ressemble au vrai site sans l'être exactement</li>
+        <li>Popup demandant d'exécuter un plugin non sollicité</li>
+        <li>Formulaire de connexion sur un domaine inattendu</li>
+        <li>Page identique à un service connu, atteinte via un lien reçu</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="h"><span class="n">2</span>Briefing de mission</h3>
+  <div class="briefing">
+    <div class="b-label">SCÉNARIO</div>
+    <p>Un collègue te transfère un e-mail suspect. Tu es l'analyste de garde : mène l'investigation dans le terminal ci-dessous jusqu'à pouvoir rendre un verdict argumenté.</p>
+    <ul class="objectives" id="obj-defense">
+      <li data-obj="expediteur"><span class="box"></span> Examiner les en-têtes techniques du mail</li>
+      <li data-obj="domaine"><span class="box"></span> Vérifier la réputation du domaine suspect</li>
+      <li data-obj="lien"><span class="box"></span> Comparer le lien affiché et sa destination réelle</li>
+      <li data-obj="verdict"><span class="box"></span> Rendre un verdict correct</li>
+    </ul>
+  </div>
+
+  <h3 class="h"><span class="n">3</span>Commandes du poste analyste</h3>
+  <div class="cmdref">
+    <div class="b-label">RÉFÉRENCE — clique "essayer" pour préremplir le terminal, puis Entrée pour l'exécuter</div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">entetes</span>
+      <span class="cmd-desc">Affiche les en-têtes techniques du mail (From, Return-Path, Received…)</span>
+      <button class="cmd-try" data-target="term-defense-input" data-cmd="entetes">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">domaine &lt;nom&gt;</span>
+      <span class="cmd-desc">Vérifie l'âge et la réputation d'un nom de domaine. Exemple : <code>domaine company-xyz-mail.com</code></span>
+      <button class="cmd-try" data-target="term-defense-input" data-cmd="domaine company-xyz-mail.com">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">lien</span>
+      <span class="cmd-desc">Compare le texte du lien dans le mail avec sa destination réelle</span>
+      <button class="cmd-try" data-target="term-defense-input" data-cmd="lien">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">verdict &lt;phishing|legitime&gt;</span>
+      <span class="cmd-desc">Enregistre ta conclusion finale. Exemple : <code>verdict phishing</code></span>
+      <button class="cmd-try" data-target="term-defense-input" data-cmd="verdict phishing">essayer →</button>
+    </div>
+  </div>
+
+  <div class="terminal-shell">
+    <div class="terminal-bar">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <span class="label">analyste@soc — investigation-e-mail</span>
+    </div>
+    <div class="terminal-body" id="term-defense"></div>
+    <div class="terminal-input-row">
+      <span class="p">soc&gt;</span>
+      <input id="term-defense-input" type="text" autocomplete="off" placeholder="tape une commande, ou clique « essayer » ci-dessus…">
+      <button class="term-hint-btn" id="hint-defense">indice</button>
+    </div>
+  </div>
+
+  <h3 class="h"><span class="n">4</span>Évaluation <span style="font-family:var(--mono); font-size:12px; color:var(--ink-dim); font-weight:400;">+3 XP par bonne réponse</span></h3>
+  <div id="quiz-defense"></div>
+</section>
+
+<!-- ===================== TRACK 2 : CONCEPTS ===================== -->
+<section class="track" id="track-concepts">
+  <p class="kicker">MODULE 02 · +30 XP disponibles</p>
+  <h2 class="title">Comprendre la logique de l'attaquant</h2>
+  <p class="lede">Pas de commandes ici, seulement la mécanique. Savoir comment un vecteur d'attaque est construit — sans savoir l'exécuter — te permet de comprendre pourquoi telle contre-mesure existe, et de la reconnaître en situation réelle.</p>
+
+  <h3 class="h"><span class="n">1</span>Quatre familles de vecteurs</h3>
+
+  <div class="card">
+    <p><span class="tag attack">Vecteur</span> <strong>Pièce jointe piégée (spear-phishing ciblé)</strong></p>
+    <p>L'attaquant identifie une cible précise, choisit un format de fichier courant (PDF, document Office) et l'envoie avec un prétexte crédible et personnalisé. La défense repose sur deux réflexes : ne jamais ouvrir un fichier inattendu même s'il paraît légitime, et maintenir les lecteurs de documents à jour.</p>
+  </div>
+  <div class="card">
+    <p><span class="tag attack">Vecteur</span> <strong>Clonage de site et vol d'identifiants</strong></p>
+    <p>Un site légitime est reproduit à l'identique sur un nom de domaine proche. La victime saisit ses identifiants en pensant être sur le vrai service. La contre-mesure la plus fiable est de vérifier systématiquement l'URL exacte et de privilégier l'authentification à plusieurs facteurs.</p>
+  </div>
+  <div class="card">
+    <p><span class="tag attack">Vecteur</span> <strong>Lien trompeur au survol (« web-jacking »)</strong></p>
+    <p>Le lien affiché au survol pointe bien vers le site attendu ; un mécanisme remplace le contenu de la page une fois cliqué, vers un site cloné. D'où l'importance de vérifier l'URL affichée après ouverture, pas seulement avant le clic.</p>
+  </div>
+  <div class="card">
+    <p><span class="tag attack">Vecteur</span> <strong>Périphérique physique (clé USB « trouvée »)</strong></p>
+    <p>Une clé USB laissée dans un lieu de passage exploite la curiosité ; certains dispositifs émulent un clavier pour contourner les protections. La défense est organisationnelle : politique stricte sur les périphériques non fournis par l'entreprise.</p>
+  </div>
+
+  <h3 class="h"><span class="n">2</span>Jeu — associe chaque vecteur à sa contre-mesure clé</h3>
+  <div class="briefing">
+    <div class="b-label">CONSIGNE</div>
+    <p>Clique un vecteur à gauche, puis la contre-mesure qui lui correspond à droite. Une bonne paire se verrouille en vert.</p>
+    <ul class="objectives" id="obj-concepts">
+      <li data-obj="matching"><span class="box"></span> Associer les 4 vecteurs à leur contre-mesure</li>
+    </ul>
+  </div>
+  <div class="match-wrap">
+    <div class="match-col">
+      <div class="m-label">VECTEURS</div>
+      <div id="match-left"></div>
+    </div>
+    <div class="match-col">
+      <div class="m-label">CONTRE-MESURES</div>
+      <div id="match-right"></div>
+    </div>
+  </div>
+  <div class="match-feedback" id="match-feedback"></div>
+
+  <h3 class="h"><span class="n">3</span>Évaluation <span style="font-family:var(--mono); font-size:12px; color:var(--ink-dim); font-weight:400;">+3 XP par bonne réponse</span></h3>
+  <div id="quiz-concepts"></div>
+</section>
+
+<!-- ===================== TRACK 3 : RED TEAM ===================== -->
+<section class="track" id="track-redteam">
+  <p class="kicker">MODULE 03 · +30 XP disponibles</p>
+  <h2 class="title">Cadrer une mission red team</h2>
+  <p class="lede">Un exercice offensif n'a de valeur que s'il est autorisé, borné et exploitable derrière. Ce module couvre la méthodologie de cadrage — pas les techniques d'exploitation.</p>
+
+  <h3 class="h"><span class="n">1</span>Théorie</h3>
+  <div class="card">
+    <p><span class="tag info">Préalable non négociable</span> Sans autorisation écrite et signée par une personne habilitée à l'engager, toute action offensive est un accès non autorisé à un système. La lettre d'engagement (<em>rules of engagement</em>) précède toujours la technique.</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <p style="font-weight:600; margin-bottom:8px;">Ce que fixe la lettre d'engagement</p>
+      <ul>
+        <li>Le périmètre exact (systèmes, domaines, personnes)</li>
+        <li>Ce qui est explicitement exclu</li>
+        <li>La fenêtre temporelle et le contact d'urgence</li>
+        <li>Le traitement des données collectées</li>
+      </ul>
+    </div>
+    <div class="card">
+      <p style="font-weight:600; margin-bottom:8px;">Cycle de vie d'une mission</p>
+      <ul>
+        <li>Cadrage et autorisation</li>
+        <li>Reconnaissance passive, dans le périmètre autorisé</li>
+        <li>Simulation d'attaque, journalisée</li>
+        <li>Rapport et remédiation priorisée</li>
+        <li>Restitution et suivi</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="h"><span class="n">2</span>Briefing de mission</h3>
+  <div class="briefing">
+    <div class="b-label">SCÉNARIO</div>
+    <p>Tu es chef de mission. Complète chaque champ de la lettre d'engagement dans le terminal avant de pouvoir lancer la mission — aucun raccourci n'est possible.</p>
+    <ul class="objectives" id="obj-redteam">
+      <li data-obj="perimetre"><span class="box"></span> Définir le périmètre technique</li>
+      <li data-obj="exclusions"><span class="box"></span> Définir les systèmes exclus</li>
+      <li data-obj="fenetre"><span class="box"></span> Définir la fenêtre temporelle</li>
+      <li data-obj="contact"><span class="box"></span> Définir le contact d'urgence</li>
+      <li data-obj="lancement"><span class="box"></span> Lancer la mission avec un dossier complet</li>
+    </ul>
+  </div>
+
+  <h3 class="h"><span class="n">3</span>Commandes du poste de cadrage</h3>
+  <div class="cmdref">
+    <div class="b-label">RÉFÉRENCE — clique "essayer" pour préremplir le terminal, puis Entrée pour l'exécuter</div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">statut</span>
+      <span class="cmd-desc">Affiche l'état actuel de la lettre d'engagement</span>
+      <button class="cmd-try" data-target="term-redteam-input" data-cmd="statut">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">definir perimetre &lt;texte&gt;</span>
+      <span class="cmd-desc">Fixe le périmètre technique autorisé. Exemple ci-contre.</span>
+      <button class="cmd-try" data-target="term-redteam-input" data-cmd="definir perimetre domaine mail xyz.fr et poste de test dediee">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">definir exclusions &lt;texte&gt;</span>
+      <span class="cmd-desc">Fixe ce qui est explicitement hors périmètre.</span>
+      <button class="cmd-try" data-target="term-redteam-input" data-cmd="definir exclusions serveurs de production et donnees clients">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">definir fenetre &lt;texte&gt;</span>
+      <span class="cmd-desc">Fixe la période durant laquelle la mission est autorisée.</span>
+      <button class="cmd-try" data-target="term-redteam-input" data-cmd="definir fenetre du 10 au 14 mars, 9h-18h">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">definir contact &lt;texte&gt;</span>
+      <span class="cmd-desc">Fixe la personne à joindre en cas d'incident réel.</span>
+      <button class="cmd-try" data-target="term-redteam-input" data-cmd="definir contact RSSI, ligne directe 24h/24">essayer →</button>
+    </div>
+    <div class="cmd-row">
+      <span class="cmd-syntax">lancer</span>
+      <span class="cmd-desc">Tente de démarrer la mission avec le dossier actuel.</span>
+      <button class="cmd-try" data-target="term-redteam-input" data-cmd="lancer">essayer →</button>
+    </div>
+  </div>
+
+  <div class="terminal-shell">
+    <div class="terminal-bar">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <span class="label">chef-de-mission@cadrage — lettre-d-engagement</span>
+    </div>
+    <div class="terminal-body" id="term-redteam"></div>
+    <div class="terminal-input-row">
+      <span class="p">cadrage&gt;</span>
+      <input id="term-redteam-input" type="text" autocomplete="off" placeholder="tape une commande, ou clique « essayer » ci-dessus…">
+      <button class="term-hint-btn" id="hint-redteam">indice</button>
+    </div>
+  </div>
+
+  <h3 class="h"><span class="n">4</span>Évaluation <span style="font-family:var(--mono); font-size:12px; color:var(--ink-dim); font-weight:400;">+3 XP par bonne réponse</span></h3>
+  <div id="quiz-redteam"></div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">Module de sensibilisation — usage pédagogique interne. Aucune commande présentée ici n'exécute d'action réelle contre un système.</div>
+</footer>
+
+<script>
+/* ================= XP & badges ================= */
+let xp = 0;
+const earnedBadges = {};
+function gainXP(n){
+  xp += n;
+  const el = document.getElementById('xp-count');
+  el.textContent = xp;
+  const pill = document.getElementById('xp-pill');
+  pill.classList.add('pulse');
+  setTimeout(()=>pill.classList.remove('pulse'), 250);
+}
+function awardBadge(id, label){
+  if(earnedBadges[id]) return;
+  earnedBadges[id] = true;
+  const row = document.getElementById('badges-row');
+  const chip = document.createElement('span');
+  chip.className = 'badge-chip';
+  chip.textContent = '★ '+label;
+  row.appendChild(chip);
+  requestAnimationFrame(()=>chip.classList.add('show'));
+}
+function markTabDone(trackId){
+  const el = document.getElementById('check-'+trackId);
+  if(el) el.textContent = '✓';
+}
+
+/* ================= tab navigation ================= */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('section.track').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('track-'+btn.dataset.track).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+/* ================= "essayer" buttons prefill terminal input ================= */
+document.querySelectorAll('.cmd-try').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const target = document.getElementById(btn.dataset.target);
+    target.value = btn.dataset.cmd;
+    target.focus();
+    target.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+});
+
+/* ================= objectives helper ================= */
+function completeObjective(listId, objKey){
+  const li = document.querySelector('#'+listId+' li[data-obj="'+objKey+'"]');
+  if(!li || li.classList.contains('done')) return false;
+  li.classList.add('done');
+  li.querySelector('.box').textContent = '✓';
+  return true;
+}
+function allObjectivesDone(listId){
+  return Array.from(document.querySelectorAll('#'+listId+' li')).every(li=>li.classList.contains('done'));
+}
+
+/* ================= generic simulated terminal ================= */
+function makeTerminal(bodyId, inputId, config){
+  const body = document.getElementById(bodyId);
+  const input = document.getElementById(inputId);
+
+  function printLine(html, cls){
+    const d = document.createElement('div');
+    d.className = 'line ' + (cls||'');
+    d.innerHTML = html;
+    body.appendChild(d);
+    body.scrollTop = body.scrollHeight;
+  }
+  function printCmd(text){
+    printLine('<span class="prompt">'+config.promptLabel+'&gt;</span> <span class="cmd">'+escapeHtml(text)+'</span>');
+  }
+  function printOut(text, tone){
+    text.split('\n').forEach(t=>printLine('<span class="out '+(tone||'')+'">'+escapeHtml(t)+'</span>'));
+  }
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  let delay = 0;
+  config.intro.forEach(t=>{
+    delay += 260;
+    setTimeout(()=>printOut(t), delay);
+  });
+
+  input.addEventListener('keydown', (e)=>{
+    if(e.key !== 'Enter') return;
+    const raw = input.value.trim();
+    if(!raw) return;
+    printCmd(raw);
+    input.value = '';
+    const [cmd, ...rest] = raw.split(' ');
+    const arg = rest.join(' ');
+    const handler = config.commands[cmd.toLowerCase()];
+    if(handler){
+      handler(arg, printOut);
+    } else {
+      printOut("Commande inconnue. Consulte la fiche de commandes ci-dessus.", 'warn');
+    }
+  });
+
+  return {printOut};
+}
+
+/* ---------------- TRACK 1 terminal : email investigation ---------------- */
+const defenseHints = ['entetes', 'domaine company-xyz-mail.com', 'lien', 'verdict phishing'];
+document.getElementById('hint-defense').addEventListener('click', ()=>{
+  const remaining = Array.from(document.querySelectorAll('#obj-defense li')).find(li=>!li.classList.contains('done'));
+  const input = document.getElementById('term-defense-input');
+  if(!remaining){ input.placeholder = "Tous les objectifs sont validés !"; return; }
+  const idx = Array.from(document.querySelectorAll('#obj-defense li')).indexOf(remaining);
+  input.value = defenseHints[idx];
+  input.focus();
+});
+
+makeTerminal('term-defense', 'term-defense-input', {
+  promptLabel: 'soc',
+  intro: [
+    "Alerte reçue : un e-mail suspect a été transféré par un collègue.",
+    "Objet du mail : \"Ta photo sur la page équipe — regarde vite !\"",
+    "Expéditeur affiché : Service Communication <comm@company-xyz.fr>",
+    "",
+    "Utilise la fiche de commandes ci-dessus, ou tape directement dans le terminal."
+  ],
+  commands: {
+    entetes: (arg, out)=>{
+      out([
+        "From: Service Communication <comm@company-xyz.fr>",
+        "Reply-To: hr-support@company-xyz-mail.com",
+        "Return-Path: bounce@mailrelay-207.company-xyz-mail.com",
+        "Received: from smtp-out-04.unknown-host.net (203.0.113.44)"
+      ].join('\n'), 'warn');
+      out("→ Le 'From' affiché ne correspond pas au domaine réel d'envoi (Return-Path). Signal d'usurpation.", 'bad');
+      if(completeObjective('obj-defense','expediteur')){ gainXP(5); out('+5 XP — en-têtes examinés', 'xp'); }
+    },
+    domaine: (arg, out)=>{
+      if(!arg){ out("Utilisation : domaine <nom-de-domaine>", 'warn'); return; }
+      if(arg.includes('company-xyz-mail')){
+        out([
+          "Domaine : "+arg,
+          "Créé il y a : 6 jours",
+          "Titulaire : masqué (protection whois)",
+          "Aucune réputation établie."
+        ].join('\n'), 'bad');
+        out("→ Un domaine créé quelques jours avant l'envoi et imitant le nom de l'entreprise est un signal fort de clonage.", 'bad');
+        if(completeObjective('obj-defense','domaine')){ gainXP(5); out('+5 XP — domaine vérifié', 'xp'); }
+      } else if(arg.includes('company-xyz.fr')){
+        out([
+          "Domaine : "+arg,
+          "Créé il y a : 11 ans",
+          "Correspond au domaine officiel connu de l'entreprise."
+        ].join('\n'), 'good');
+      } else {
+        out("Domaine non reconnu dans cette investigation. Essaie 'company-xyz.fr' ou 'company-xyz-mail.com'.", 'warn');
+      }
+    },
+    lien: (arg, out)=>{
+      out([
+        "Texte affiché dans le mail : https://company-xyz.fr/equipe/photos",
+        "Destination réelle du lien : https://company-xyz-mail.com/login?next=harvest"
+      ].join('\n'), 'bad');
+      out("→ Le texte du lien et sa destination réelle divergent. Ne jamais cliquer sans vérifier.", 'bad');
+      if(completeObjective('obj-defense','lien')){ gainXP(5); out('+5 XP — lien vérifié', 'xp'); }
+    },
+    verdict: (arg, out)=>{
+      if(arg.toLowerCase().includes('phish')){
+        out("Verdict enregistré : PHISHING. Bonne analyse — signale ce mail et fais bloquer le domaine.", 'good');
+        if(completeObjective('obj-defense','verdict')){
+          gainXP(10); out('+10 XP — verdict correct', 'xp');
+          if(allObjectivesDone('obj-defense')){
+            awardBadge('defense', 'Analyste SOC');
+            markTabDone('defense');
+            out('🏅 Badge débloqué : Analyste SOC — module 01 terminé.', 'good');
+          }
+        }
+      } else if(arg.toLowerCase().includes('legit')){
+        out("Ce n'est pas la bonne conclusion ici — relis les résultats de 'entetes' et 'lien' avant de trancher.", 'bad');
+      } else {
+        out("Utilisation : verdict <phishing|legitime>", 'warn');
+      }
+    }
+  }
+});
+
+/* ---------------- TRACK 2 : matching game ---------------- */
+const pairs = [
+  {v:"Pièce jointe piégée", d:"Ne jamais ouvrir un fichier inattendu, garder les lecteurs à jour"},
+  {v:"Clonage de site", d:"Vérifier l'URL exacte, activer l'authentification à plusieurs facteurs"},
+  {v:"Lien trompeur au survol", d:"Vérifier l'URL affichée après ouverture, pas seulement avant le clic"},
+  {v:"Clé USB « trouvée »", d:"Politique stricte sur les périphériques non fournis par l'entreprise"}
+];
+(function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } })(pairs);
+const leftOrder = pairs.map((p,i)=>i);
+const rightOrder = [...leftOrder]; (function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } })(rightOrder);
+
+const leftCol = document.getElementById('match-left');
+const rightCol = document.getElementById('match-right');
+const feedback = document.getElementById('match-feedback');
+let selectedLeft = null, selectedRight = null, matchedCount = 0;
+
+leftOrder.forEach(i=>{
+  const b = document.createElement('button');
+  b.className = 'match-item';
+  b.textContent = pairs[i].v;
+  b.dataset.idx = i;
+  b.addEventListener('click', ()=>{
+    if(b.classList.contains('matched')) return;
+    document.querySelectorAll('#match-left .match-item').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    selectedLeft = i;
+    tryMatch();
+  });
+  leftCol.appendChild(b);
+});
+rightOrder.forEach(i=>{
+  const b = document.createElement('button');
+  b.className = 'match-item';
+  b.textContent = pairs[i].d;
+  b.dataset.idx = i;
+  b.addEventListener('click', ()=>{
+    if(b.classList.contains('matched')) return;
+    document.querySelectorAll('#match-right .match-item').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    selectedRight = i;
+    tryMatch();
+  });
+  rightCol.appendChild(b);
+});
+
+function tryMatch(){
+  if(selectedLeft === null || selectedRight === null) return;
+  const leftBtn = leftCol.querySelector('[data-idx="'+selectedLeft+'"]');
+  const rightBtn = rightCol.querySelector('[data-idx="'+selectedRight+'"]');
+  if(selectedLeft === selectedRight){
+    leftBtn.classList.remove('selected'); rightBtn.classList.remove('selected');
+    leftBtn.classList.add('matched'); rightBtn.classList.add('matched');
+    matchedCount++;
+    gainXP(4);
+    feedback.textContent = 'Correspondance validée · +4 XP  ('+matchedCount+'/4)';
+    feedback.style.color = 'var(--green)';
+    if(matchedCount === 4){
+      completeObjective('obj-concepts','matching');
+      awardBadge('concepts-match', 'Œil aguerri');
+      feedback.textContent = 'Les 4 associations sont trouvées. Passe à l\'évaluation ci-dessous.';
+    }
+  } else {
+    leftBtn.classList.add('shake'); rightBtn.classList.add('shake');
+    feedback.textContent = 'Pas la bonne paire — réessaie.';
+    feedback.style.color = 'var(--red)';
+    setTimeout(()=>{
+      leftBtn.classList.remove('shake','selected'); rightBtn.classList.remove('shake','selected');
+    }, 350);
+  }
+  selectedLeft = null; selectedRight = null;
+}
+
+/* ---------------- TRACK 3 terminal : engagement letter builder ---------------- */
+const engagementState = {perimetre:false, exclusions:false, fenetre:false, contact:false};
+function engagementStatus(){
+  const items = [
+    ['perimetre','Périmètre technique'],
+    ['exclusions','Systèmes exclus'],
+    ['fenetre','Fenêtre temporelle'],
+    ['contact',"Contact d'urgence"]
+  ];
+  return items.map(([k,l])=> (engagementState[k]?'[x] ':'[ ] ')+l).join('\n');
+}
+const redteamHintOrder = ['perimetre','exclusions','fenetre','contact','lancement'];
+const redteamHintCmds = {
+  perimetre: 'definir perimetre domaine mail xyz.fr et poste de test dediee',
+  exclusions: 'definir exclusions serveurs de production et donnees clients',
+  fenetre: 'definir fenetre du 10 au 14 mars, 9h-18h',
+  contact: 'definir contact RSSI, ligne directe 24h/24',
+  lancement: 'lancer'
+};
+document.getElementById('hint-redteam').addEventListener('click', ()=>{
+  const remaining = Array.from(document.querySelectorAll('#obj-redteam li')).find(li=>!li.classList.contains('done'));
+  const input = document.getElementById('term-redteam-input');
+  if(!remaining){ input.placeholder = "Dossier complet !"; return; }
+  input.value = redteamHintCmds[remaining.dataset.obj];
+  input.focus();
+});
+
+makeTerminal('term-redteam', 'term-redteam-input', {
+  promptLabel: 'cadrage',
+  intro: [
+    "Mission à cadrer : test de résistance au phishing pour la société XYZ.",
+    "Aucune action offensive ne peut commencer tant que la lettre d'engagement n'est pas complète.",
+    "",
+    "Utilise la fiche de commandes ci-dessus pour remplir chaque champ."
+  ],
+  commands: {
+    statut: (arg, out)=> out(engagementStatus()),
+    definir: (arg, out)=>{
+      const [champ, ...texte] = arg.split(' ');
+      const val = texte.join(' ');
+      const map = {perimetre:'perimetre', exclusions:'exclusions', fenetre:'fenetre', contact:'contact'};
+      if(!map[champ]){ out("Champ inconnu. Utilise : perimetre, exclusions, fenetre, contact.", 'warn'); return; }
+      if(!val){ out("Précise un texte après le champ — regarde l'exemple dans la fiche de commandes.", 'warn'); return; }
+      const already = engagementState[map[champ]];
+      engagementState[map[champ]] = true;
+      out("Champ '"+champ+"' enregistré : \""+val+"\"", 'good');
+      if(!already && completeObjective('obj-redteam', map[champ])){
+        gainXP(4); out('+4 XP', 'xp');
+      }
+    },
+    lancer: (arg, out)=>{
+      const manquants = Object.entries(engagementState).filter(([k,v])=>!v);
+      if(manquants.length){
+        out("Impossible de lancer la mission : la lettre d'engagement est incomplète.", 'bad');
+        out(engagementStatus(), 'warn');
+      } else {
+        out("Lettre d'engagement complète et cohérente.", 'good');
+        out("→ Dans une mission réelle, ce document est maintenant signé par une personne habilitée côté client avant toute action.", 'good');
+        if(completeObjective('obj-redteam','lancement')){
+          gainXP(8); out('+8 XP — dossier de cadrage bouclé', 'xp');
+          awardBadge('redteam', 'Chef de mission');
+          markTabDone('redteam');
+        }
+      }
+    }
+  }
+});
+
+/* ================= quiz engine ================= */
+function buildQuiz(containerId, questions, onFinish){
+  const container = document.getElementById(containerId);
+  let score = 0;
+  let answered = 0;
+
+  const scoreBox = document.createElement('div');
+  scoreBox.className = 'quiz-score';
+  scoreBox.id = containerId+'-score';
+
+  questions.forEach((q, qi)=>{
+    const qBox = document.createElement('div');
+    qBox.className = 'quiz-q';
+    const p = document.createElement('p');
+    p.className = 'q';
+    p.textContent = (qi+1)+'. '+q.q;
+    qBox.appendChild(p);
+
+    const optsWrap = document.createElement('div');
+    optsWrap.className = 'opts';
+
+    const explain = document.createElement('div');
+    explain.className = 'explain';
+    explain.textContent = q.explain;
+
+    q.opts.forEach((opt, oi)=>{
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.textContent = opt;
+      b.addEventListener('click', ()=>{
+        if(b.disabled) return;
+        Array.from(optsWrap.children).forEach(c=>c.disabled = true);
+        if(oi === q.correct){
+          b.classList.add('correct');
+          score++;
+          gainXP(3);
+        } else {
+          b.classList.add('wrong');
+          optsWrap.children[q.correct].classList.add('correct');
+        }
+        explain.classList.add('show');
+        answered++;
+        updateScore();
+        if(answered === questions.length && onFinish) onFinish(score, questions.length);
+      });
+      optsWrap.appendChild(b);
+    });
+
+    qBox.appendChild(optsWrap);
+    qBox.appendChild(explain);
+    container.appendChild(qBox);
+  });
+
+  container.appendChild(scoreBox);
+
+  function updateScore(){
+    scoreBox.classList.add('show');
+    const pct = Math.round((score/questions.length)*100);
+    scoreBox.innerHTML = 'Score : '+score+' / '+questions.length+' ('+pct+'%)'+
+      '<div class="barwrap"><div class="barfill" style="width:'+pct+'%"></div></div>';
+  }
+}
+
+buildQuiz('quiz-defense', [
+  {
+    q: "Un e-mail affiche 'comm@company-xyz.fr' mais le champ Return-Path pointe vers un domaine différent créé il y a 6 jours. Que fais-tu ?",
+    opts: ["Je fais confiance au nom affiché, c'est le plus visible", "Je considère ça comme un signal fort d'usurpation et je ne clique sur rien", "Je réponds au mail pour demander confirmation"],
+    correct: 1,
+    explain: "La divergence entre l'adresse affichée et le domaine d'envoi réel, combinée à un domaine très récent, sont deux signaux qui se renforcent mutuellement."
+  },
+  {
+    q: "Le texte d'un lien affiche une URL connue, mais tu veux vérifier sa destination réelle avant de cliquer. Le bon réflexe est :",
+    opts: ["Cliquer rapidement puis fermer si ça semble louche", "Survoler le lien pour voir l'URL réelle, sans cliquer", "Faire confiance si le logo de l'entreprise apparaît dans le mail"],
+    correct: 1,
+    explain: "Le logo et la mise en forme sont trivialement imitables. L'URL réelle derrière le lien est un signal beaucoup plus fiable."
+  },
+  {
+    q: "Pourquoi le MFA réduit-il l'impact d'un site cloné qui vole des identifiants ?",
+    opts: ["Il empêche techniquement le clonage du site", "Un identifiant volé seul ne suffit plus à se connecter", "Il bloque automatiquement tous les domaines suspects"],
+    correct: 1,
+    explain: "Le MFA ne prévient pas le vol d'un mot de passe, mais rend ce mot de passe insuffisant seul pour accéder au compte."
+  }
+]);
+
+buildQuiz('quiz-concepts', [
+  {
+    q: "Un lien pointe bien vers le site attendu au survol, mais après clic la page change vers un site cloné. Quel vecteur cela décrit-il ?",
+    opts: ["Le clonage de site classique", "Le lien trompeur post-clic (« web-jacking »)", "L'attaque par périphérique physique"],
+    correct: 1,
+    explain: "C'est la caractéristique de ce vecteur : l'URL est correcte au survol, la substitution se produit après le clic."
+  },
+  {
+    q: "Pourquoi une politique sur les périphériques USB est-elle pertinente contre certaines attaques physiques ?",
+    opts: ["Parce que tous les virus viennent des clés USB", "Parce que certains dispositifs se font passer pour un clavier et contournent le blocage d'exécution automatique", "Parce que les clés USB ralentissent l'ordinateur"],
+    correct: 1,
+    explain: "En émulant un clavier, ces dispositifs échappent aux protections centrées sur l'exécution automatique de fichiers."
+  },
+  {
+    q: "Quel est le point commun entre les quatre vecteurs présentés dans ce module ?",
+    opts: ["Ils exploitent tous une faille logicielle non corrigée", "Ils exploitent tous la confiance accordée à un format, une marque, une interface ou un objet", "Ils nécessitent tous un accès physique préalable"],
+    correct: 1,
+    explain: "C'est le fil conducteur de l'ingénierie sociale : détourner une confiance existante plutôt que casser un mécanisme technique."
+  }
+], (score, total)=>{
+  if(score === total){ awardBadge('concepts-quiz', 'Théoricien'); markTabDone('concepts'); }
+});
+
+buildQuiz('quiz-redteam', [
+  {
+    q: "Une équipe veut tester la résistance au phishing d'une entreprise sans lettre d'engagement signée, en se disant qu'ils préviendront après. Est-ce acceptable ?",
+    opts: ["Oui si l'intention est bonne", "Non — sans autorisation écrite préalable, c'est un accès non autorisé", "Oui si le test est limité à un seul employé"],
+    correct: 1,
+    explain: "L'autorisation écrite précède toujours l'action. L'intention ne change rien au statut légal d'un accès non autorisé."
+  },
+  {
+    q: "Que doit contenir un rapport red team de qualité, en plus de la liste des vulnérabilités ?",
+    opts: ["Le nom des personnes qui ont cliqué sur le lien piégé", "Une priorisation des remédiations selon impact et probabilité", "Le détail complet permettant de reproduire l'attaque par n'importe qui"],
+    correct: 1,
+    explain: "La valeur d'un rapport red team est dans l'aide à la décision : quoi corriger en premier, et pourquoi."
+  },
+  {
+    q: "Pourquoi la fenêtre temporelle et le contact d'urgence sont-ils des champs obligatoires ?",
+    opts: ["Pour des raisons purement administratives", "Pour pouvoir interrompre le test si un incident réel se déclenche en parallèle", "Uniquement pour la facturation"],
+    correct: 1,
+    explain: "Si un système réagit de façon imprévue, il faut pouvoir arrêter le test et joindre quelqu'un immédiatement."
+  }
+]);
+</script>
+</body>
+</html>
